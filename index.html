@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BBM (Hons) Banking &amp; Finance — GPA Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F3EEE3; --panel:#FFFFFF; --maroon:#7B1E3D; --maroon-dark:#5C1730;
+    --ink:#2A2420; --ink-soft:#7A6F62; --brass:#A9793E; --line:#DED3C2;
+    --line-strong:#C9BBA5; --good:#3F6B4F; --radius:4px;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1D1915; --panel:#26211B; --maroon:#D98BA6; --maroon-dark:#B4577A;
+      --ink:#EDE6DA; --ink-soft:#AB9F8F; --brass:#D9AE72; --line:#3C342A; --line-strong:#4E4335; --good:#7FBF97;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1D1915; --panel:#26211B; --maroon:#D98BA6; --maroon-dark:#B4577A;
+    --ink:#EDE6DA; --ink-soft:#AB9F8F; --brass:#D9AE72; --line:#3C342A; --line-strong:#4E4335; --good:#7FBF97;
+  }
+  html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%;}
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100%; background:var(--paper); color:var(--ink);
+    font-family:'Inter',system-ui,-apple-system,sans-serif; line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,.serif{font-family:'Fraunces',Georgia,serif;}
+  .wrap{max-width:760px; margin:0 auto; padding:0 18px 64px;}
+
+  header.top{
+    position:sticky; top:0; z-index:20; background:var(--paper);
+    border-bottom:1px solid var(--line-strong);
+    padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 12px;
+  }
+  header.top .row{max-width:760px; margin:0 auto; display:flex; align-items:flex-end; justify-content:space-between; gap:12px;}
+  header.top h1{font-size:19px; font-weight:600; margin:0; letter-spacing:-0.01em; color:var(--maroon-dark);}
+  header.top p{margin:2px 0 0; font-size:12.5px; color:var(--ink-soft);}
+  .live-gpa{text-align:right; flex-shrink:0;}
+  .live-gpa .num{font-family:'Fraunces',serif; font-size:26px; font-weight:600; color:var(--brass); line-height:1;}
+  .live-gpa .lbl{font-size:10.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em;}
+  .intro{padding:20px 0 6px; font-size:13.5px; color:var(--ink-soft);}
+  .intro b{color:var(--ink);}
+
+  .modebar{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin:14px 0 22px; padding:10px 12px; background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--radius); font-size:13px;
+  }
+  .seg{display:flex; border:1px solid var(--line-strong); border-radius:999px; overflow:hidden;}
+  .seg button{
+    border:none; background:transparent; color:var(--ink-soft); font:inherit; font-size:12.5px;
+    padding:6px 13px; cursor:pointer; font-weight:500;
+  }
+  .seg button.active{background:var(--maroon); color:#fff;}
+
+  h2.section-title{font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:600; margin:0 0 10px; font-family:'Inter',sans-serif;}
+
+  .sem-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:28px;}
+  @media (min-width:520px){ .sem-grid{grid-template-columns:repeat(4,1fr);} }
+  .sem-pick{
+    border:1px solid var(--line-strong); background:var(--panel); border-radius:var(--radius);
+    padding:9px 8px; text-align:left; cursor:pointer; color:var(--ink);
+  }
+  .sem-pick .l{font-size:12px; font-weight:600;}
+  .sem-pick .c{font-size:10.5px; color:var(--ink-soft); margin-top:1px;}
+  .sem-pick.on{background:var(--maroon); border-color:var(--maroon);}
+  .sem-pick.on .l, .sem-pick.on .c{color:#fff;}
+
+  .semester{margin-bottom:26px; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:var(--panel);}
+  .semester .head{
+    display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+    padding:12px 14px; background:var(--maroon); color:#fff;
+  }
+  .semester .head h3{font-family:'Fraunces',serif; font-weight:600; font-size:15px; margin:0;}
+  .semester .head .g{font-size:13px; font-variant-numeric:tabular-nums; opacity:.95;}
+  .grp-note{font-size:11.5px; color:var(--ink-soft); padding:9px 14px 0; font-style:italic;}
+
+  .course{
+    display:grid; grid-template-columns:20px 78px 1fr 34px 96px; gap:9px; align-items:center;
+    padding:9px 14px; border-top:1px solid var(--line); font-size:12.5px;
+  }
+  .course:first-of-type{border-top:none;}
+  @media (max-width:480px){
+    .course{grid-template-columns:20px 1fr 96px; grid-template-areas:"chk title input" "chk meta input";}
+    .course .code{grid-area:meta; font-size:10.5px;}
+    .course .title{grid-area:title;}
+    .course .credits{display:none;}
+    .course input[type=checkbox]{grid-area:chk;}
+    .course .in-cell{grid-area:input;}
+  }
+  .course input[type=checkbox]{width:16px; height:16px; accent-color:var(--maroon);}
+  .course .code{color:var(--ink-soft); font-size:11px; font-variant-numeric:tabular-nums;}
+  .course .title{color:var(--ink);}
+  .course.excluded .title, .course.excluded .code{opacity:.4;}
+  .course .credits{color:var(--ink-soft); font-size:11px; text-align:center;}
+  .course select, .course input[type=number]{
+    width:100%; font:inherit; font-size:12.5px; padding:5px 6px; border:1px solid var(--line-strong);
+    border-radius:var(--radius); background:var(--paper); color:var(--ink);
+  }
+  .course .pts{font-size:10px; color:var(--brass); margin-top:2px; text-align:right; font-variant-numeric:tabular-nums;}
+
+  .empty{
+    text-align:center; padding:36px 20px; color:var(--ink-soft); font-size:13.5px;
+    border:1px dashed var(--line-strong); border-radius:var(--radius);
+  }
+
+  .summary{
+    margin-top:8px; padding:22px 18px; background:var(--maroon); color:#fff; border-radius:var(--radius);
+    text-align:center;
+  }
+  .summary .num{font-family:'Fraunces',serif; font-size:44px; font-weight:600; line-height:1;}
+  .summary .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.08em; opacity:.8; margin-top:4px;}
+  .summary .meta{font-size:12px; opacity:.85; margin-top:10px;}
+  .breakdown{margin-top:14px; text-align:left; font-size:12px;}
+  .breakdown div{display:flex; justify-content:space-between; padding:4px 0; border-top:1px solid rgba(255,255,255,.18);}
+
+  .actions{display:flex; justify-content:center; margin-top:16px;}
+  .reset{
+    border:1px solid var(--line-strong); background:var(--panel); color:var(--ink-soft);
+    font:inherit; font-size:12px; padding:8px 16px; border-radius:999px; cursor:pointer;
+  }
+  .reset:hover{color:var(--maroon);}
+
+  footer{text-align:center; font-size:11px; color:var(--ink-soft); padding:26px 0 6px;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="row">
+    <div>
+      <h1>GPA Calculator</h1>
+      <p>B.B.Mgt. (Hons) Banking &amp; Finance</p>
+    </div>
+    <div class="live-gpa">
+      <div class="num" id="liveGpa">—</div>
+      <div class="lbl">Cumulative</div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <p class="intro">Tick the semesters you've completed, then enter a grade or marks for each course. <b>Optional</b> courses start unticked — select only the ones you actually took. Everything you enter is saved on this device automatically.</p>
+
+  <div class="modebar">
+    <span>Enter results as</span>
+    <div class="seg" id="modeSeg">
+      <button data-mode="grade">Letter grade</button>
+      <button data-mode="marks">Marks (0–100)</button>
+    </div>
+  </div>
+
+  <h2 class="section-title">Completed semesters</h2>
+  <div class="sem-grid" id="semGrid"></div>
+
+  <div id="semesterList"></div>
+
+  <div id="summaryBox"></div>
+
+  <div class="actions"><button class="reset" id="resetBtn">Reset all results</button></div>
+
+  <footer>Course structure and grading scale from the B.B.Mgt. (Hons) in Banking &amp; Finance Student Handbook 2023/2024. Optional-course choices and later curriculum revisions may vary — check your own handbook if unsure.</footer>
+</div>
+
+<script>
+const COURSES = [
+ {code:'BBNF 11213',title:'Microeconomics',credits:3,type:'core',level:1,sem:'I'},
+ {code:'BBNF 11223',title:'Mathematics for Business',credits:3,type:'core',level:1,sem:'I'},
+ {code:'BBNF 11233',title:'Financial Accounting',credits:3,type:'core',level:1,sem:'I'},
+ {code:'BBNF 11243',title:'Management Principles and Practices',credits:3,type:'core',level:1,sem:'I'},
+ {code:'BBNF 11253',title:'Fundamentals of Information Technology',credits:3,type:'core',level:1,sem:'I'},
+ {code:'BBNF 12213',title:'Corporate Finance',credits:3,type:'core',level:1,sem:'II'},
+ {code:'BBNF 12223',title:'Business Statistics',credits:3,type:'core',level:1,sem:'II'},
+ {code:'BBNF 12233',title:'Macroeconomics',credits:3,type:'core',level:1,sem:'II'},
+ {code:'BBNF 12242',title:'Principles of Programming',credits:2,type:'core',level:1,sem:'II'},
+ {code:'BBNF 12252',title:'Marketing for Financial Services',credits:2,type:'core',level:1,sem:'II'},
+ {code:'BBNF 13262',title:'Young Professionals Programme I',credits:2,type:'core',level:1,sem:'II'},
+ {code:'BBNF 21214',title:'Managerial Accounting',credits:4,type:'core',level:2,sem:'I'},
+ {code:'BBNF 21223',title:'Financial Modeling and Data Visualization',credits:3,type:'core',level:2,sem:'I'},
+ {code:'BBNF 21233',title:'Advanced Financial Accounting',credits:3,type:'core',level:2,sem:'I'},
+ {code:'BBNF 21243',title:'Business and Banking Law',credits:3,type:'core',level:2,sem:'I'},
+ {code:'BBNF 21252',title:'Taxation',credits:2,type:'core',level:2,sem:'I'},
+ {code:'BBNF 22213',title:'Advanced Corporate Finance',credits:3,type:'core',level:2,sem:'II'},
+ {code:'BBNF 22223',title:'Financial Data Science',credits:3,type:'core',level:2,sem:'II'},
+ {code:'BBNF 22233',title:'Financial Reporting and Analysis',credits:3,type:'core',level:2,sem:'II'},
+ {code:'BBNF 22242',title:'Corporate Sustainability and Business Ethics',credits:2,type:'core',level:2,sem:'II'},
+ {code:'BBNF 22252',title:'Principles of Banking',credits:2,type:'core',level:2,sem:'II'},
+ {code:'BBNF 23262',title:'Young Professionals Programme II',credits:2,type:'core',level:2,sem:'II'},
+ {code:'BBNF 31213',title:'Risk Management in Banking',credits:3,type:'core',level:3,sem:'I'},
+ {code:'BBNF 31223',title:'Econometrics',credits:3,type:'core',level:3,sem:'I'},
+ {code:'BBNF 31233',title:'Monetary Economics',credits:3,type:'core',level:3,sem:'I'},
+ {code:'BBNF 31242',title:'Customer Relationship Management',credits:2,type:'core',level:3,sem:'I'},
+ {code:'BBNF 31252',title:'Investment Analysis and Portfolio Management',credits:2,type:'core',level:3,sem:'I'},
+ {code:'BBNF 31262',title:'Young Professionals Programme III',credits:2,type:'core',level:3,sem:'I'},
+ {code:'BBNF 31272',title:'Small Business Management and Entrepreneurship',credits:2,type:'core',level:3,sem:'I'},
+ {code:'BBNF 32213',title:'Research Methodology',credits:3,type:'core',level:3,sem:'II'},
+ {code:'BBNF 32223',title:'Banking Regulation and Compliance',credits:3,type:'core',level:3,sem:'II'},
+ {code:'BBNF 32233',title:'Non-banking Financial Business',credits:3,type:'core',level:3,sem:'II'},
+ {code:'BBNF 32242',title:'Micro Finance',credits:2,type:'core',level:3,sem:'II'},
+ {code:'BBNF 32252',title:'Analysis of Derivatives',credits:2,type:'optional',level:3,sem:'II'},
+ {code:'BBNF 32262',title:'Analysis of Fixed Income Investment',credits:2,type:'optional',level:3,sem:'II'},
+ {code:'BBNF 41212',title:'Managing Behaviours in Organizations',credits:2,type:'core',level:4,sem:'I'},
+ {code:'BBNF 41222',title:'Investment and Development Banking',credits:2,type:'core',level:4,sem:'I'},
+ {code:'BBNF 41232',title:'International Trade Finance',credits:2,type:'core',level:4,sem:'I'},
+ {code:'BBNF 41242',title:'Alternative Investments',credits:2,type:'optional',level:4,sem:'I'},
+ {code:'BBNF 41252',title:'International Finance',credits:2,type:'optional',level:4,sem:'I'},
+ {code:'BBNF 41262',title:'Advanced Portfolio Management and Wealth Planning',credits:2,type:'optional',level:4,sem:'I'},
+ {code:'BBNF 41272',title:'Financial Technologies',credits:2,type:'optional',level:4,sem:'I'},
+ {code:'BBNF 42213',title:'Treasury Management',credits:3,type:'core',level:4,sem:'II'},
+ {code:'BBNF 42223',title:'Credit Management',credits:3,type:'core',level:4,sem:'II'},
+ {code:'BBNF 42232',title:'Strategic Management',credits:2,type:'core',level:4,sem:'II'},
+ {code:'BBNF 43246',title:'Dissertation',credits:6,type:'core',level:4,sem:'II'},
+ {code:'BBNF 43258',title:'Internship',credits:8,type:'core',level:4,sem:'II'},
+];
+
+const GRADES = [
+ {grade:'A+',min:85,max:100,points:4.00},
+ {grade:'A', min:70,max:84, points:4.00},
+ {grade:'A-',min:65,max:69, points:3.70},
+ {grade:'B+',min:60,max:64, points:3.30},
+ {grade:'B', min:55,max:59, points:3.00},
+ {grade:'B-',min:50,max:54, points:2.70},
+ {grade:'C+',min:45,max:49, points:2.30},
+ {grade:'C', min:40,max:44, points:2.00},
+ {grade:'C-',min:35,max:39, points:1.70},
+ {grade:'D+',min:30,max:34, points:1.30},
+ {grade:'D', min:25,max:29, points:1.00},
+ {grade:'E', min:0, max:24, points:0.00},
+];
+
+const SEMESTERS = [];
+COURSES.forEach(c=>{
+  const key = c.level+'-'+c.sem;
+  let s = SEMESTERS.find(s=>s.key===key);
+  if(!s){ s={key, level:c.level, sem:c.sem, label:'Level '+c.level+' — Semester '+c.sem, courses:[]}; SEMESTERS.push(s); }
+  s.courses.push(c);
+});
+SEMESTERS.sort((a,b)=> a.level-b.level || (a.sem>b.sem?1:-1));
+
+const STORE_KEY = 'bbnf-gpa-v1';
+let state = loadState();
+
+function defaultEntry(course){
+  return {included: course.type==='core', grade:'', marks:''};
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return {mode:'grade', selected:[], entries:{}, theme:null};
+}
+function saveState(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
+}
+function getEntry(code){
+  const course = COURSES.find(c=>c.code===code);
+  if(!state.entries[code]) state.entries[code] = defaultEntry(course);
+  return state.entries[code];
+}
+function pointsFor(entry){
+  if(!entry.included) return null;
+  if(state.mode==='grade'){
+    if(!entry.grade) return null;
+    const g = GRADES.find(g=>g.grade===entry.grade);
+    return g ? g.points : null;
+  }else{
+    if(entry.marks==='' || entry.marks===null || isNaN(entry.marks)) return null;
+    const m = Math.max(0, Math.min(100, Number(entry.marks)));
+    const g = GRADES.find(g=> m>=g.min && m<=g.max);
+    return g ? g.points : null;
+  }
+}
+function gradeLabelFor(entry){
+  if(state.mode==='marks' && entry.marks!=='' && !isNaN(entry.marks)){
+    const m = Math.max(0, Math.min(100, Number(entry.marks)));
+    const g = GRADES.find(g=> m>=g.min && m<=g.max);
+    return g ? g.grade : '';
+  }
+  return entry.grade;
+}
+
+function computeSemesterGpa(sem){
+  let credit=0, credpt=0, any=false;
+  sem.courses.forEach(c=>{
+    const e = getEntry(c.code);
+    const pts = pointsFor(e);
+    if(pts!==null){ credit+=c.credits; credpt+=c.credits*pts; any=true; }
+  });
+  return {gpa: credit>0 ? credpt/credit : null, credit, any};
+}
+function computeCumulative(){
+  let credit=0, credpt=0, semCount=0;
+  const rows=[];
+  SEMESTERS.forEach(sem=>{
+    if(!state.selected.includes(sem.key)) return;
+    const r = computeSemesterGpa(sem);
+    if(r.any) semCount++;
+    if(r.credit>0){ credit+=r.credit; credpt+= r.gpa*r.credit; }
+    rows.push({label:sem.label, gpa:r.gpa, credit:r.credit});
+  });
+  return {gpa: credit>0 ? credpt/credit : null, credit, semCount, rows};
+}
+
+function renderSemGrid(){
+  const grid = document.getElementById('semGrid');
+  grid.innerHTML='';
+  SEMESTERS.forEach(sem=>{
+    const btn = document.createElement('button');
+    btn.className = 'sem-pick' + (state.selected.includes(sem.key)?' on':'');
+    const credits = sem.courses.filter(c=>c.type==='core').reduce((a,c)=>a+c.credits,0);
+    btn.innerHTML = '<div class="l">L'+sem.level+' · Sem '+sem.sem+'</div><div class="c">'+sem.courses.length+' units</div>';
+    btn.onclick = ()=>{
+      const i = state.selected.indexOf(sem.key);
+      if(i>-1) state.selected.splice(i,1); else state.selected.push(sem.key);
+      saveState(); renderAll();
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function renderCourseRow(c){
+  const e = getEntry(c.code);
+  const row = document.createElement('div');
+  row.className = 'course' + (!e.included?' excluded':'');
+  const pts = pointsFor(e);
+  const gLabel = gradeLabelFor(e);
+
+  const chk = document.createElement('input');
+  chk.type='checkbox'; chk.checked = e.included;
+  chk.onchange = ()=>{ e.included = chk.checked; saveState(); renderAll(); };
+
+  const code = document.createElement('div'); code.className='code'; code.textContent=c.code;
+  const title = document.createElement('div'); title.className='title'; title.textContent=c.title;
+  const credits = document.createElement('div'); credits.className='credits'; credits.textContent=c.credits+'cr';
+
+  const inCell = document.createElement('div'); inCell.className='in-cell';
+  if(state.mode==='grade'){
+    const sel = document.createElement('select');
+    sel.innerHTML = '<option value="">—</option>' + GRADES.map(g=>'<option value="'+g.grade+'"'+(e.grade===g.grade?' selected':'')+'>'+g.grade+'</option>').join('');
+    sel.onchange = ()=>{ e.grade = sel.value; saveState(); renderAll(); };
+    inCell.appendChild(sel);
+  }else{
+    const num = document.createElement('input');
+    num.type='number'; num.min=0; num.max=100; num.placeholder='0–100';
+    num.value = e.marks;
+    num.oninput = ()=>{ e.marks = num.value; saveState(); renderAll(); };
+    inCell.appendChild(num);
+    if(gLabel){
+      const p = document.createElement('div'); p.className='pts'; p.textContent = gLabel+' · '+(pts!==null?pts.toFixed(2):'');
+      inCell.appendChild(p);
+    }
+  }
+
+  row.appendChild(chk); row.appendChild(code); row.appendChild(title); row.appendChild(credits); row.appendChild(inCell);
+  return row;
+}
+
+function renderSemesterList(){
+  const list = document.getElementById('semesterList');
+  list.innerHTML='';
+  const active = SEMESTERS.filter(s=>state.selected.includes(s.key));
+  if(active.length===0){
+    list.innerHTML = '<div class="empty">Tick a semester above to enter its results.</div>';
+    return;
+  }
+  active.forEach(sem=>{
+    const box = document.createElement('div'); box.className='semester';
+    const head = document.createElement('div'); head.className='head';
+    const r = computeSemesterGpa(sem);
+    head.innerHTML = '<h3>'+sem.label+'</h3><div class="g">'+(r.gpa!==null? 'GPA '+r.gpa.toFixed(2) : '—')+'</div>';
+    box.appendChild(head);
+
+    const hasOptional = sem.courses.some(c=>c.type==='optional');
+    if(hasOptional){
+      const note = document.createElement('div'); note.className='grp-note';
+      note.textContent = 'Includes optional units below — tick only the ones you completed.';
+      box.appendChild(note);
+    }
+    sem.courses.forEach(c=> box.appendChild(renderCourseRow(c)));
+    list.appendChild(box);
+  });
+}
+
+function renderSummary(){
+  const box = document.getElementById('summaryBox');
+  const c = computeCumulative();
+  document.getElementById('liveGpa').textContent = c.gpa!==null ? c.gpa.toFixed(2) : '—';
+  if(state.selected.length===0){ box.innerHTML=''; return; }
+  let html = '<div class="summary"><div class="num">'+(c.gpa!==null? c.gpa.toFixed(2):'—')+'</div><div class="lbl">Cumulative GPA</div>';
+  html += '<div class="meta">'+c.credit+' credits across '+c.semCount+' of '+state.selected.length+' selected semester(s)</div>';
+  const withData = c.rows.filter(r=>r.gpa!==null);
+  if(withData.length>1){
+    html += '<div class="breakdown">' + withData.map(r=>'<div><span>'+r.label+'</span><span>'+r.gpa.toFixed(2)+'</span></div>').join('') + '</div>';
+  }
+  html += '</div>';
+  box.innerHTML = html;
+}
+
+function renderModeBar(){
+  document.querySelectorAll('#modeSeg button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.mode===state.mode);
+  });
+}
+
+function renderAll(){
+  renderSemGrid();
+  renderModeBar();
+  renderSemesterList();
+  renderSummary();
+}
+
+document.getElementById('modeSeg').addEventListener('click', e=>{
+  const btn = e.target.closest('button'); if(!btn) return;
+  state.mode = btn.dataset.mode; saveState(); renderAll();
+});
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(!confirm('Clear all entered results on this device?')) return;
+  state = {mode:'grade', selected:[], entries:{}, theme:null};
+  saveState(); renderAll();
+});
+
+if(state.theme) document.documentElement.setAttribute('data-theme', state.theme);
+renderAll();
+</script>
+</body>
+</html>
